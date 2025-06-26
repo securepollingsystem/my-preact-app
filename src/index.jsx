@@ -1,5 +1,6 @@
 import { render } from 'preact';
 import { LocationProvider, Router, Route } from 'preact-iso';
+// vim: ts=2
 
 import { Header } from './components/Header.jsx';
 import { Home } from './pages/Home/index.jsx';
@@ -13,8 +14,7 @@ export function App() {
 			<main>
 				<Router>
 					<Route path="/" component={Home} />
-					<Route path="/sdf" component={Home} />
-					<Route default component={NotFound} />
+					<Route default component={NotFound} /> // thi is the 404 page in src/pages/_404.jsx
 				</Router>
 			</main>
 		</LocationProvider>
