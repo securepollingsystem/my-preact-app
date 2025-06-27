@@ -68,13 +68,7 @@ export function Home() {
         <div
           onClick={() => deleteThisOpinionModal(item)}
           key={JSON.stringify(item)}
-          className="hover-effect"
-          style={{
-            display: "flex",
-            cursor: "pointer",
-            justifyContent: "space-between",
-            borderBottom: "1px solid black",
-          }}
+          class="opinion"
         >
           {" "}
           <div>{item}</div>
@@ -101,12 +95,7 @@ export function Home() {
         <div
           onClick={() => bringUpAddThisModal(searchString)}
           key="compose"
-          className="hover-effect"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            borderBottom: "1px solid red",
-          }}
+          class="opinion"
         >
           click this to add {searchString} to your screed
         </div>
@@ -115,14 +104,7 @@ export function Home() {
           <div
             onClick={() => bringUpAddThisModal(item.opinion)}
             key={item.id} // react uses the key to keep track of DOM so must be unique
-            className="hover-effect"
-            style={{
-              display:
-                "flex" /* this is so that the percentage appears after the phrase, on the same line */,
-              cursor: "pointer",
-              justifyContent: "space-between",
-              borderBottom: "1px solid black",
-            }}
+            class="opinion"
           >
             {" "}
             {/* https://css-tricks.com/snippets/css/a-guide-to-flexbox/ */}
