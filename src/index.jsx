@@ -8,17 +8,17 @@ import { NotFound } from './pages/_404.jsx';
 import './style.css';
 
 export function App() {
-	return (
-		<LocationProvider>
-			<Header />
-			<main>
-				<Router>
-					<Route path="/" component={Home} />
-					<Route default component={NotFound} /> // thi is the 404 page in src/pages/_404.jsx
-				</Router>
-			</main>
-		</LocationProvider>
-	);
+  return (
+    <LocationProvider>
+      <Header />
+      <main>
+        <Router>
+          <Route path="/" component={Home} />
+          <Route default component={NotFound} /> // thi is the 404 page in src/pages/_404.jsx
+        </Router>
+      </main>
+    </LocationProvider>
+  );
 }
 
 render(<App />, document.getElementById('app'));
