@@ -1,7 +1,7 @@
 import { createPortal } from 'preact/compat';
 import './Modal.css';
 
-const Modal = ({ onClose, children, title }) => { // children is a special property and represents what's passed inside the <Modal>
+export const Modal = ({ onClose, children, title }) => { // children is a special property and represents what's passed inside the <Modal>
   const handleCloseClick = (e) => {
     e.preventDefault();
     onClose();
@@ -29,5 +29,3 @@ const Modal = ({ onClose, children, title }) => { // children is a special prope
     document.getElementById("modal-root")
   );
 };
-
-export default Modal
