@@ -40,6 +40,66 @@ export function Home() {
   const [modalData, setModalData] = useState({title : "title", children : "slkdfjslkdfjsldkfj"});
   const [loadedScreed, setLoadedScreed] = useState(['default val']);
 
+  function addThisOpinion(opinion) {
+    setLoadedScreed([...loadedScreed, opinion]);
+    localStorage.setItem("myScreed", JSON.stringify(loadedScreed));
+    setShowModal(false);
+    console.log(loadedScreed); // this works but loadedScreed goes back to its original definition from line 69
+  }
+
+  function clearMyScreedModal() {
+    var Buttons = () => (<div>
+      <button onClick={() => {
+        setLoadedScreed([]);
+        localStorage.setItem("myScreed", JSON.stringify(loadedScreed));
+        setShowModal(false);
+      } }>yes Clear My Screed</button>
+      <button onClick={() => setShowModal(false)}>Cancel</button></div>);
+
+    setModalData({title : "You are about to clear out your whole screed!",
+    children : <div><Buttons /></div>});
+    setShowModal(true);
+  }
+
+  function deleteThisOpinionModal(opinion) {
+    var Buttons = () => (<div>
+      <button onClick={() => {
+        setLoadedScreed(loadedScreed.filter(item => item !== opinion)); // remove this opinion
+        localStorage.setItem("myScreed", JSON.stringify(loadedScreed));
+        setShowModal(false);
+      } }>remove from my screed</button>
+      <button onClick={() => setShowModal(false)}>Cancel</button></div>);
+
+    setModalData({title : "Do you want to REMOVE this opinion from your screed?",
+    children : <div><div>{opinion}</div><Buttons /></div>});
+    setShowModal(true);
+  }
+
+  function bringUpAddThisModal(opinion) {
+    if (loadedScreed.indexOf(opinion) >= 0) {
+      var Buttons = () => (<div>
+        <button onClick={() => setShowModal(false)}>Oops sorry</button></div>);
+
+      setModalData({
+        title : "You already have this opinion in your screed!",
+        children : <div><div>{opinion}</div><Buttons /></div>
+      });
+    } else {
+      var Buttons = () => (<div>
+        <button onClick={() => addThisOpinion(opinion)}>Confirm</button>
+        <button onClick={() => setShowModal(false)}>Cancel</button></div>);
+
+      setModalData({title : "Do you want to add this opinion to your screed?",
+
+      children : <div><div>{opinion}</div><Buttons /></div>});
+    }
+
+    // TODO: see if we already have it and behave accordingly
+    // TODO: add a button to do what you're being asked to do
+    // TODO: hook escape key to close modal
+    setShowModal(true);
+  }
+
   useEffect(() =>
     setLoadedScreed(
       JSON.parse(
