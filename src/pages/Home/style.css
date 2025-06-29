@@ -14,29 +14,29 @@ img:hover {
 }
 
 .opinion {
-        display: flex; /* this is so that the percentage appears after the phrase, on the same line */
-        cursor: pointer;
-        justify-content: space-between;
-        border-bottom: 1px solid black;
+  display: flex; /* this is so that the percentage appears after the phrase, on the same line */
+  cursor: pointer;
+  justify-content: space-between;
+  border-bottom: 1px solid black;
 }
 
 .opinion:hover {
-        font-weight:bold;
-        background-color: #00ff00;
+  font-weight:bold;
+  background-color: #00ff00;
 }
 
 @media (prefers-color-scheme: dark) {
   .opinion:hover {
-                background-color: #007700;
+    background-color: #007700;
   }
-        .opinion {
-                border-bottom: 1px solid grey;
-        }
+  .opinion {
+    border-bottom: 1px solid grey;
+  }
 }
 
 @media (prefers-color-scheme: light) {
   .opinion:hover {
-                background-color: #00ffff;
+    background-color: #00ffff;
   }
 }
 
