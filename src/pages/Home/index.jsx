@@ -1,6 +1,7 @@
 import preactLogo from '../../assets/preact.svg';
 import './style.css';
 import { useState, useEffect } from 'preact/hooks';
+import { Modal } from "../../components/Modal.jsx";
 
 const getSubset = async (searchText) => {
   const res = await fetch(
