@@ -40,18 +40,20 @@ export function Home() {
   const [modalData, setModalData] = useState({title : "title", children : "slkdfjslkdfjsldkfj"});
   const [loadedScreed, setLoadedScreed] = useState(['default val']);
 
-  function addThisOpinion(opinion) {
-    setLoadedScreed([...loadedScreed, opinion]);
-    localStorage.setItem("myScreed", JSON.stringify(loadedScreed));
+  function changeScreed(newScreed) {
+    setLoadedScreed(newScreed); // scheduled for next render
+    localStorage.setItem("myScreed", JSON.stringify(newScreed)); // update local storage
+  }
+
+  function addThisOpinion(opinion) { // TODO: figure out why this doesnt actually save the most recent thing
+    changeScreed([...loadedScreed, opinion]);
     setShowModal(false);
-    console.log(loadedScreed); // this works but loadedScreed goes back to its original definition from line 69
   }
 
   function clearMyScreedModal() {
     var Buttons = () => (<div>
       <button onClick={() => {
-        setLoadedScreed([]);
-        localStorage.setItem("myScreed", JSON.stringify(loadedScreed));
+        changeScreed([]);
         setShowModal(false);
       } }>yes Clear My Screed</button>
       <button onClick={() => setShowModal(false)}>Cancel</button></div>);
@@ -64,8 +66,7 @@ export function Home() {
   function deleteThisOpinionModal(opinion) {
     var Buttons = () => (<div>
       <button onClick={() => {
-        setLoadedScreed(loadedScreed.filter(item => item !== opinion)); // remove this opinion
-        localStorage.setItem("myScreed", JSON.stringify(loadedScreed));
+        changeScreed(loadedScreed.filter(item => item !== opinion)); // remove this opinion
         setShowModal(false);
       } }>remove from my screed</button>
       <button onClick={() => setShowModal(false)}>Cancel</button></div>);
@@ -101,11 +102,10 @@ export function Home() {
   }
 
   useEffect(() =>
-    setLoadedScreed(
-      JSON.parse(
-        localStorage.getItem("myScreed")
-      ) || ["nothing found in local storage"]
-    ),
+    {
+      console.log("myScreed:",localStorage.getItem("myScreed"));
+      setLoadedScreed(JSON.parse(localStorage.getItem("myScreed")) || ["nothing found in local storage"]);
+    },
     []
   );
 
