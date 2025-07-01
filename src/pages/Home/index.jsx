@@ -2,6 +2,16 @@ import preactLogo from '../../assets/preact.svg';
 import './style.css';
 import { useState, useEffect } from 'preact/hooks';
 import { Modal } from "../../components/Modal.jsx";
+import _sodium from 'libsodium-wrappers';
+
+await _sodium.ready;
+const sodium = _sodium;
+console.log("sodium:",sodium);
+
+function genKey() {
+  const key = sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES);
+  console.log('Generated key:', sodium.to_hex(key));
+}
 
 const getSubset = async (searchText) => {
   const res = await fetch(
@@ -39,6 +49,7 @@ export function Home() {
   const [subset, setSubset] = useState([]);
   const [modalData, setModalData] = useState({title : "title", children : "slkdfjslkdfjsldkfj"});
   const [loadedScreed, setLoadedScreed] = useState(['default val']);
+
 
   function changeScreed(newScreed) {
     setLoadedScreed(newScreed); // scheduled for next render
@@ -125,6 +136,7 @@ export function Home() {
         <h1>Your Screed:</h1>
         <button onClick={() => clearMyScreedModal()}>Clear my screed!</button>
       </div>
+      <button onClick={() => genKey()} >genkey</button>
       {loadedScreed.map((item) => (
         <div
           onClick={() => deleteThisOpinionModal(item)}
