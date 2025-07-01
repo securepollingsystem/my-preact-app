@@ -63,7 +63,7 @@ export function Home() {
 
   function clearMyScreedModal() {
     var Buttons = () => (<div>
-      <button onClick={() => {
+      <button id="confirmBtn" onClick={() => {
         changeScreed([]);
         setShowModal(false);
       } }>yes Clear My Screed</button>
@@ -76,7 +76,7 @@ export function Home() {
 
   function deleteThisOpinionModal(opinion) {
     var Buttons = () => (<div>
-      <button onClick={() => {
+      <button id="confirmBtn" onClick={() => {
         changeScreed(loadedScreed.filter(item => item !== opinion)); // remove this opinion
         setShowModal(false);
       } }>remove from my screed</button>
@@ -90,7 +90,7 @@ export function Home() {
   function bringUpAddThisModal(opinion) {
     if (loadedScreed.indexOf(opinion) >= 0) {
       var Buttons = () => (<div>
-        <button onClick={() => setShowModal(false)}>Oops sorry</button></div>);
+        <button id="confirmBtn" onClick={() => setShowModal(false)}>Oops sorry</button></div>);
 
       setModalData({
         title : "You already have this opinion in your screed!",
@@ -98,7 +98,7 @@ export function Home() {
       });
     } else {
       var Buttons = () => (<div>
-        <button onClick={() => addThisOpinion(opinion)}>Confirm</button>
+        <button id="confirmBtn" onClick={() => addThisOpinion(opinion)}>Confirm</button>
         <button onClick={() => setShowModal(false)}>Cancel</button></div>);
 
       setModalData({title : "Do you want to add this opinion to your screed?",
@@ -124,8 +124,21 @@ export function Home() {
     getSubset(searchString.toLowerCase()).then(setSubset);
   }, [searchString]); // searchString is what it watches and reloads the fetch on changes!!!!!!!
 
-  // returning JSX
-  //console.log('what is subset', subset); // looks like json
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === "Escape" && showModal) { // close the modal if escape is pressed
+        setShowModal(false);
+      }
+      if (e.key === "Enter" && showModal) { // activate the button that is offered in the modal
+        const btn = document.getElementById("confirmBtn");
+        if (btn) btn.click();
+        setShowModal(false);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showModal]);
+
   return (
     <div class="home">
       <h4>Secure Polling Demo</h4>
