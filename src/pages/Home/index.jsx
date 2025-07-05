@@ -221,6 +221,14 @@ export function Home() {
       <input
         value={searchString}
         onChange={e => setSearchString(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (searchString.trim() !== "" && subset.length === 0) {
+              bringUpAddThisModal(searchString);
+            }
+          }
+        }}
       />
     </div>
       {subset.length === 0 ? (
@@ -229,7 +237,7 @@ export function Home() {
           key="compose"
           class="opinion"
         >
-          click this to add {searchString} to your screed
+          click or press Enter to add {searchString} to your screed
         </div>
       ) : (
         subset.map((item) => (
