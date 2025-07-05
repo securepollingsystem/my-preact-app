@@ -25,12 +25,23 @@ img:hover {
   background-color: #00ff00;
 }
 
+.italic-info {
+  cursor: pointer;
+  justify-content: space-between;
+  border-bottom: 2px solid black;
+  font-style: italic;
+}
+
 @media (prefers-color-scheme: dark) {
   .opinion:hover {
     background-color: #007700;
   }
   .opinion {
     border-bottom: 1px solid grey;
+  }
+  .italic-info {
+    color: #ccc;
+    border-bottom: 2px solid #bbb;
   }
 }
 
@@ -39,7 +50,6 @@ img:hover {
     background-color: #00ffff;
   }
 }
-
 
 .resource {
   padding: 0.75rem 1.5rem;
@@ -71,5 +81,8 @@ img:hover {
   }
   .resource:hover {
     border: 1px solid #bbb;
+  }
+  button {
+    border: 1px solid #fff;
   }
 }

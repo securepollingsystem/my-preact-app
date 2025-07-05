@@ -8,11 +8,6 @@ await _sodium.ready;
 const sodium = _sodium;
 console.log("sodium:",sodium);
 
-function genKey() {
-  const key = sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES);
-  console.log('Generated key:', sodium.to_hex(key));
-}
-
 const getSubset = async (searchText) => {
   const res = await fetch(
     `http://stemgrid.org:8993/opinions?subset=%${searchText}%`
@@ -49,6 +44,7 @@ export function Home() {
   const [subset, setSubset] = useState([]);
   const [modalData, setModalData] = useState({title : "title", children : "slkdfjslkdfjsldkfj"});
   const [loadedScreed, setLoadedScreed] = useState(['default val']);
+  const [privateKey, setPrivateKey] = useState(['default val']);
 
 
   function changeScreed(newScreed) {
@@ -114,6 +110,43 @@ export function Home() {
 
   useEffect(() =>
     {
+      console.log("myPrivateKeyHex:",localStorage.getItem("myPrivateKeyHex"));
+      setPrivateKey(localStorage.getItem("myPrivateKeyHex") || ["nothing found in local storage"]);
+    },
+    []
+  );
+
+  function genKey() {
+    //const key = sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES);
+    //console.log('Generated key:', sodium.to_hex(key));
+
+    const signKey = sodium.crypto_sign_keypair().privateKey; // generates a new private key for signing
+    console.log("Signing public key:", sodium.to_hex(signKey.slice(32, 64)));
+    const privateKey = sodium.to_hex(signKey);
+    console.log("Signing private key:", privateKey);
+
+    setPrivateKey(privateKey); // sets the private key hex string in the state
+    localStorage.setItem("myPrivateKeyHex", privateKey); // saves the private key
+    console.log("privateKey saved to localStorage:", privateKey);
+  //  Suppose you have your private key as a hex string:
+  //  const myPrivateKey = sodium.from_hex("your_private_key_hex_string");
+
+  //  The public key is the last 32 bytes of the private key, or you can store it separately:
+  //  const myPublicKey = myPrivateKey.slice(32, 64);
+
+  //  Now you can use myPrivateKey and myPublicKey with sodium.crypto_sign functions
+  //  const myPrivateKey = sodium.from_hex(myPrivateKeyHex);
+  //  const myPublicKey = sodium.from_hex(myPublicKeyHex);
+  }
+
+  function clearKey() {
+    setPrivateKey("nothing found in local storage"); // sets the private key hex string in the state
+    localStorage.setItem("myPrivateKeyHex", ["nothing found in local storage"]); // saves the private key
+    console.log("privateKey cleared");
+  }
+
+  useEffect(() =>
+    {
       console.log("myScreed:",localStorage.getItem("myScreed"));
       setLoadedScreed(JSON.parse(localStorage.getItem("myScreed")) || ["nothing found in local storage"]);
     },
@@ -148,8 +181,21 @@ export function Home() {
           }}>
         <h1>Your Screed:</h1>
         <button onClick={() => clearMyScreedModal()}>Clear my screed!</button>
+        <button onClick={() => clearKey()}>Clear my privateKey!</button>
       </div>
-      <button onClick={() => genKey()} >genkey</button>
+      {privateKey == 'nothing found in local storage' ? (
+        <div onClick={() => console.log("privateKey:",privateKey)} class="italic-info">
+          You don't have an encryption key yet!
+          <button onClick={() => genKey()} >Generate and save a new encryption key</button>
+        </div>
+      ) : (
+        <div onClick={() => console.log("privateKey:",privateKey)} class="italic-info">
+          Your private key is: {privateKey} <br />Keep it secret, keep it safe!
+          It is stored in your browser's local storage. It's used to sign your
+          votes and opinions. It's never sent to the server.
+          It's only useful with a signature of your public key by the registrar.
+        </div>
+        )}
       {loadedScreed.map((item) => (
         <div
           onClick={() => deleteThisOpinionModal(item)}
