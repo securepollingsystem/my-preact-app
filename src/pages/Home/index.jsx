@@ -43,7 +43,6 @@ export function Home() {
   const [loadedScreed, setLoadedScreed] = useState(['default val']);
   const [privateKey, setPrivateKey] = useState(['default val']);
 
-
   useEffect(() => {
     (async () => {
       await _sodium.ready;
@@ -106,10 +105,6 @@ export function Home() {
 
       children : <div><div>{opinion}</div><Buttons /></div>});
     }
-
-    // TODO: see if we already have it and behave accordingly
-    // TODO: add a button to do what you're being asked to do
-    // TODO: hook escape key to close modal
     setShowModal(true);
   }
 
@@ -122,9 +117,6 @@ export function Home() {
   );
 
   function genKey() {
-    //const key = sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES);
-    //console.log('Generated key:', sodium.to_hex(key));
-
     const signKey = sodium.crypto_sign_keypair().privateKey; // generates a new private key for signing
     console.log("Signing public key:", sodium.to_hex(signKey.slice(32, 64)));
     const privateKey = sodium.to_hex(signKey);
@@ -166,6 +158,9 @@ export function Home() {
     function handleKeyDown(e) {
       if (e.key === "Escape" && showModal) { // close the modal if escape is pressed
         setShowModal(false);
+      }
+      if (e.key === "Escape" && showModal == false) { // clear searchString if escape pressed
+        setSearchString("");
       }
       if (e.key === "Enter" && showModal) { // activate the button that is offered in the modal
         const btn = document.getElementById("confirmBtn");
@@ -225,7 +220,7 @@ export function Home() {
     <h1>Search text:</h1>
       <input
         value={searchString}
-        onChange={(e) => setSearchString(e.target.value)}
+        onChange={e => setSearchString(e.target.value)}
       />
     </div>
       {subset.length === 0 ? (
