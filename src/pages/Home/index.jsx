@@ -4,10 +4,6 @@ import { useState, useEffect } from 'preact/hooks';
 import { Modal } from "../../components/Modal.jsx";
 import _sodium from 'libsodium-wrappers';
 
-await _sodium.ready;
-const sodium = _sodium;
-console.log("sodium:",sodium);
-
 const getSubset = async (searchText) => {
   const res = await fetch(
     `http://stemgrid.org:8993/opinions?subset=%${searchText}%`
@@ -19,7 +15,7 @@ const getSubset = async (searchText) => {
     `http://stemgrid.org:8993/opinions?subset=%${searchText}%`
   );
 
-  var data = []
+  var data = [];
 
   try {
     if (!res.ok) {
@@ -39,6 +35,7 @@ const getSubset = async (searchText) => {
 };
 
 export function Home() {
+  const [sodium, setSodium] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [searchString, setSearchString] = useState(""); // returns the value and a function to update the value (initially "")
   const [subset, setSubset] = useState([]);
@@ -46,6 +43,14 @@ export function Home() {
   const [loadedScreed, setLoadedScreed] = useState(['default val']);
   const [privateKey, setPrivateKey] = useState(['default val']);
 
+
+  useEffect(() => {
+    (async () => {
+      await _sodium.ready;
+      setSodium(_sodium);
+      console.log("sodium:", _sodium);
+    })();
+  }, []);
 
   function changeScreed(newScreed) {
     setLoadedScreed(newScreed); // scheduled for next render
