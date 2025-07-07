@@ -172,16 +172,34 @@ export function Home() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showModal]);
 
+  function uploadScreed() {
+    fetch("http://stemgrid.org:8993/upload-screed", {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain"
+      },
+      body: JSON.stringify(loadedScreed)
+    })
+      .then(res => res.json())
+      .then(data => {
+        alert("Screed uploaded! Server response: " + JSON.stringify(data));
+      })
+      .catch(err => {
+        alert("Failed to upload screed: " + err);
+      });
+  }
+
   return (
     <div class="home">
-      <h4>Secure Polling Demo</h4>
+      <h1>Secure Polling Demo</h1>
       <br />
       <div style={{
         display: "flex"
           }}>
         <h1>Your Screed:</h1>
-        <button onClick={() => clearMyScreedModal()}>Clear my screed!</button>
-        <button onClick={() => clearKey()}>Clear my privateKey!</button>
+        <button onClick={clearMyScreedModal}>Clear my screed!</button>
+        <button onClick={uploadScreed}>Upload my screed</button>
+        <button onClick={clearKey}>Clear my privateKey!</button>
       </div>
       {privateKey == 'nothing found in local storage' ? (
         <div onClick={() => console.log("privateKey:",privateKey)} class="italic-info">
