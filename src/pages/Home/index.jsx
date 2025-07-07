@@ -2,6 +2,7 @@ import preactLogo from '../../assets/preact.svg';
 import './style.css';
 import { useState, useEffect } from 'preact/hooks';
 import { Modal } from "../../components/Modal.jsx";
+import _sodium from 'libsodium-wrappers';
 
 const getSubset = async (searchText) => {
   const res = await fetch(
@@ -14,7 +15,7 @@ const getSubset = async (searchText) => {
     `http://stemgrid.org:8993/opinions?subset=%${searchText}%`
   );
 
-  var data = []
+  var data = [];
 
   try {
     if (!res.ok) {
@@ -34,11 +35,21 @@ const getSubset = async (searchText) => {
 };
 
 export function Home() {
+  const [sodium, setSodium] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [searchString, setSearchString] = useState(""); // returns the value and a function to update the value (initially "")
   const [subset, setSubset] = useState([]);
   const [modalData, setModalData] = useState({title : "title", children : "slkdfjslkdfjsldkfj"});
   const [loadedScreed, setLoadedScreed] = useState(['default val']);
+  const [privateKey, setPrivateKey] = useState(['default val']);
+
+  useEffect(() => {
+    (async () => {
+      await _sodium.ready;
+      setSodium(_sodium);
+      console.log("sodium:", _sodium);
+    })();
+  }, []);
 
   function changeScreed(newScreed) {
     setLoadedScreed(newScreed); // scheduled for next render
@@ -94,11 +105,41 @@ export function Home() {
 
       children : <div><div>{opinion}</div><Buttons /></div>});
     }
-
-    // TODO: see if we already have it and behave accordingly
-    // TODO: add a button to do what you're being asked to do
-    // TODO: hook escape key to close modal
     setShowModal(true);
+  }
+
+  useEffect(() =>
+    {
+      console.log("myPrivateKeyHex:",localStorage.getItem("myPrivateKeyHex"));
+      setPrivateKey(localStorage.getItem("myPrivateKeyHex") || ["nothing found in local storage"]);
+    },
+    []
+  );
+
+  function genKey() {
+    const signKey = sodium.crypto_sign_keypair().privateKey; // generates a new private key for signing
+    console.log("Signing public key:", sodium.to_hex(signKey.slice(32, 64)));
+    const privateKey = sodium.to_hex(signKey);
+    console.log("Signing private key:", privateKey);
+
+    setPrivateKey(privateKey); // sets the private key hex string in the state
+    localStorage.setItem("myPrivateKeyHex", privateKey); // saves the private key
+    console.log("privateKey saved to localStorage:", privateKey);
+  //  Suppose you have your private key as a hex string:
+  //  const myPrivateKey = sodium.from_hex("your_private_key_hex_string");
+
+  //  The public key is the last 32 bytes of the private key, or you can store it separately:
+  //  const myPublicKey = myPrivateKey.slice(32, 64);
+
+  //  Now you can use myPrivateKey and myPublicKey with sodium.crypto_sign functions
+  //  const myPrivateKey = sodium.from_hex(myPrivateKeyHex);
+  //  const myPublicKey = sodium.from_hex(myPublicKeyHex);
+  }
+
+  function clearKey() {
+    setPrivateKey("nothing found in local storage"); // sets the private key hex string in the state
+    localStorage.setItem("myPrivateKeyHex", ["nothing found in local storage"]); // saves the private key
+    console.log("privateKey cleared");
   }
 
   useEffect(() =>
@@ -118,6 +159,9 @@ export function Home() {
       if (e.key === "Escape" && showModal) { // close the modal if escape is pressed
         setShowModal(false);
       }
+      if (e.key === "Escape" && showModal == false) { // clear searchString if escape pressed
+        setSearchString("");
+      }
       if (e.key === "Enter" && showModal) { // activate the button that is offered in the modal
         const btn = document.getElementById("confirmBtn");
         if (btn) btn.click();
@@ -128,16 +172,48 @@ export function Home() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showModal]);
 
+  function uploadScreed() {
+    fetch("http://stemgrid.org:8993/upload-screed", {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain"
+      },
+      body: JSON.stringify(loadedScreed)
+    })
+      .then(res => res.json())
+      .then(data => {
+        alert("Screed uploaded! Server response: " + JSON.stringify(data));
+      })
+      .catch(err => {
+        alert("Failed to upload screed: " + err);
+      });
+  }
+
   return (
     <div class="home">
-      <h4>Secure Polling Demo</h4>
+      <h1>Secure Polling Demo</h1>
       <br />
       <div style={{
         display: "flex"
           }}>
         <h1>Your Screed:</h1>
-        <button onClick={() => clearMyScreedModal()}>Clear my screed!</button>
+        <button onClick={clearMyScreedModal}>Clear my screed!</button>
+        <button onClick={uploadScreed}>Upload my screed</button>
+        <button onClick={clearKey}>Clear my privateKey!</button>
       </div>
+      {privateKey == 'nothing found in local storage' ? (
+        <div onClick={() => console.log("privateKey:",privateKey)} class="italic-info">
+          You don't have an encryption key yet!
+          <button onClick={() => genKey()} >Generate and save a new encryption key</button>
+        </div>
+      ) : (
+        <div onClick={() => console.log("privateKey:",privateKey)} class="italic-info">
+          Your private key is: {privateKey} <br />Keep it secret, keep it safe!
+          It is stored in your browser's local storage. It's used to sign your
+          votes and opinions. It's never sent to the server.
+          It's only useful with a signature of your public key by the registrar.
+        </div>
+        )}
       {loadedScreed.map((item) => (
         <div
           onClick={() => deleteThisOpinionModal(item)}
@@ -162,7 +238,15 @@ export function Home() {
     <h1>Search text:</h1>
       <input
         value={searchString}
-        onChange={(e) => setSearchString(e.target.value)}
+        onChange={e => setSearchString(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (searchString.trim() !== "" && subset.length === 0) {
+              bringUpAddThisModal(searchString);
+            }
+          }
+        }}
       />
     </div>
       {subset.length === 0 ? (
@@ -171,7 +255,7 @@ export function Home() {
           key="compose"
           class="opinion"
         >
-          click this to add {searchString} to your screed
+          click or press Enter to add {searchString} to your screed
         </div>
       ) : (
         subset.map((item) => (
