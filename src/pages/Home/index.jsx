@@ -172,13 +172,36 @@ export function Home() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showModal]);
 
+  function getSignedScreedObject() {
+    if (!sodium) {
+      alert('ERROR: libsodium not found');
+      return null;
+    }
+    if (!privateKey || privateKey === 'nothing found in local storage') {
+      alert('You can\'t upload your screed without a private key!');
+      return null;
+    }
+    const privKeyBytes = sodium.from_hex(privateKey); // Convert privateKey hex string to Uint8Array
+    const pubKeyBytes = privKeyBytes.slice(32, 64); // Get public key (last 32 bytes)
+    const publicKeyHex = sodium.to_hex(pubKeyBytes);
+    const screedString = JSON.stringify(loadedScreed);
+    const signature = sodium.to_base64(sodium.crypto_sign_detached(screedString, privKeyBytes));
+    return { // Create the signed screed object
+      screed: screedString,
+      signature,
+      publicKey: publicKeyHex
+    };
+  }
+
   function uploadScreed() {
+    const signedObj = getSignedScreedObject();
+    if (!signedObj) return;
     fetch("http://stemgrid.org:8993/upload-screed", {
       method: "POST",
       headers: {
-        "Content-Type": "text/plain"
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify(loadedScreed)
+      body: JSON.stringify(signedObj)
     })
       .then(res => res.json())
       .then(data => {
