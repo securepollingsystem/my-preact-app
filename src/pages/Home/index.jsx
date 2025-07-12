@@ -155,6 +155,9 @@ export function Home() {
   }, [searchString]); // searchString is what it watches and reloads the fetch on changes!!!!!!!
 
   useEffect(() => {
+    if (showModal) {
+      document.getElementById("confirmBtn").focus(); // make Enter not go to the wrong place
+    }
     function handleKeyDown(e) {
       if (e.key === "Escape" && showModal) { // close the modal if escape is pressed
         setShowModal(false);

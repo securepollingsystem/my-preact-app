@@ -43,11 +43,17 @@ img:hover {
     color: #ccc;
     border-bottom: 2px solid #bbb;
   }
+  button:focus {
+    outline: 8px solid green;
+  }
 }
 
 @media (prefers-color-scheme: light) {
   .opinion:hover {
     background-color: #00ffff;
+  }
+  button:focus {
+    outline: 8px solid yellow;
   }
 }
 
