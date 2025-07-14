@@ -145,7 +145,7 @@ export function Home() {
   useEffect(() =>
     {
       console.log("myScreed:",localStorage.getItem("myScreed"));
-      setLoadedScreed(JSON.parse(localStorage.getItem("myScreed")) || ["nothing found in local storage"]);
+      setLoadedScreed(JSON.parse(localStorage.getItem("myScreed")) || []);
     },
     []
   );
