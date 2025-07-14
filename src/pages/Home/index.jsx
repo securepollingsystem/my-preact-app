@@ -180,8 +180,8 @@ export function Home() {
       alert('ERROR: libsodium not found');
       return null;
     }
-    if (!privateKey || privateKey === 'nothing found in local storage') {
-      alert('You can\'t upload your screed without a private key!');
+    if (!privateKey || privateKey == "nothing found in local storage") {
+      alert('You can\'t upload your screed without an encryption key!');
       return null;
     }
     const privKeyBytes = sodium.from_hex(privateKey); // Convert privateKey hex string to Uint8Array

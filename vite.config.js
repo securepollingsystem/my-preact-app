@@ -6,6 +6,6 @@ export default defineConfig({
 	plugins: [preact()],
 	server: {
 		port: 8990,
-		allowedHosts: ['demo.securepollingsystem.org']
+		allowedHosts: ['demo.securepollingsystem.org','demo.securepollingsystem.com']
 	}
 });
