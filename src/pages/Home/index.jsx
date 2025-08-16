@@ -6,13 +6,13 @@ import _sodium from 'libsodium-wrappers';
 
 const getSubset = async (searchText) => {
   const res = await fetch(
-    `http://stemgrid.org:8993/opinions?subset=%${searchText}%`
+    `http://stemgrid.org:8993/opinions?subset=${searchText}`
   ).catch((e) => {
     console.log(e);
   });
   console.log(
     "url:",
-    `http://stemgrid.org:8993/opinions?subset=%${searchText}%`
+    `http://stemgrid.org:8993/opinions?subset=${searchText}`
   );
 
   var data = [];

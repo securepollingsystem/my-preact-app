@@ -7,7 +7,6 @@
 <h3 align="center">Get started using Preact and Vite!</h3>
 
 ## todo
-- frontend fails to search for spaces!?!?
 - check the server for your own screed?  maybe by requesting a subset of pubkeys containing part of yours (to prevent doxing yourself to the server)
 - let you know if you have changes newer than the last time you uploaded to the server (from localstorage)
 
