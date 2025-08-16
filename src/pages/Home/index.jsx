@@ -70,7 +70,7 @@ export function Home() {
       <button onClick={() => setShowModal(false)}>Cancel</button></div>);
 
     setModalData({title : "You are about to clear out your whole screed!",
-    children : <div><Buttons /></div>});
+    children : <div><br/><Buttons /></div>});
     setShowModal(true);
   }
 
@@ -83,7 +83,7 @@ export function Home() {
       <button onClick={() => setShowModal(false)}>Cancel</button></div>);
 
     setModalData({title : "Do you want to REMOVE this opinion from your screed?",
-    children : <div><div>{opinion}</div><Buttons /></div>});
+    children : <div><div>{opinion}</div><br/><Buttons /></div>});
     setShowModal(true);
   }
 
@@ -94,7 +94,7 @@ export function Home() {
 
       setModalData({
         title : "You already have this opinion in your screed!",
-        children : <div><div>{opinion}</div><Buttons /></div>
+        children : <div><div>{opinion}</div><br/><Buttons /></div>
       });
     } else {
       var Buttons = () => (<div>
@@ -103,7 +103,7 @@ export function Home() {
 
       setModalData({title : "Do you want to add this opinion to your screed?",
 
-      children : <div><div>{opinion}</div><Buttons /></div>});
+      children : <div><div>{opinion}</div><br/><Buttons /></div>});
     }
     setShowModal(true);
   }
@@ -218,7 +218,7 @@ export function Home() {
   return (
     <div class="home">
       <h1>Secure Polling Demo</h1>
-      <br />
+      <br/>
       <div style={{
         display: "flex"
           }}>
@@ -234,10 +234,7 @@ export function Home() {
         </div>
       ) : (
         <div onClick={() => console.log("privateKey:",privateKey)} class="italic-info">
-          Your private key is: {privateKey} <br />Keep it secret, keep it safe!
-          It is stored in your browser's local storage. It's used to sign your
-          votes and opinions. It's never sent to the server.
-          It's only useful with a signature of your public key by the registrar.
+          Your public key is {privateKey.slice(64,96)} {privateKey.slice(96,128)}
         </div>
         )}
       {loadedScreed.map((item) => (
