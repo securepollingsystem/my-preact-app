@@ -6,6 +6,14 @@
 
 <h3 align="center">Get started using Preact and Vite!</h3>
 
+## todo
+- frontend fails to search for spaces!?!?
+- check the server for your own screed?  maybe by requesting a subset of pubkeys containing part of yours (to prevent doxing yourself to the server)
+- let you know if you have changes newer than the last time you uploaded to the server (from localstorage)
+
+## check on phone formatting:
+- the long privatekey makes the phone formatting way too wide and then the modal is offscreen
+
 ## Getting Started
 
 -   `npm run dev` - Starts a dev server at http://localhost:5173/ or whatever port is configured in vite.config.js
