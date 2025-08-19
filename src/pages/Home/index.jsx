@@ -5,14 +5,15 @@ import { Modal } from "../../components/Modal.jsx";
 import _sodium from 'libsodium-wrappers';
 
 const getSubset = async (searchText) => {
+  const tally_url = `https://tally.securepollingsystem.com/opinions?subset=${searchText}`;
   const res = await fetch(
-    `http://stemgrid.org:8993/opinions?subset=${searchText}`
+    tally_url
   ).catch((e) => {
     console.log(e);
   });
   console.log(
     "url:",
-    `http://stemgrid.org:8993/opinions?subset=${searchText}`
+    tally_url
   );
 
   var data = [];
@@ -199,7 +200,7 @@ export function Home() {
   function uploadScreed() {
     const signedObj = getSignedScreedObject();
     if (!signedObj) return;
-    fetch("http://stemgrid.org:8993/upload-screed", {
+    fetch("https://tally.securepollingsystem.com/upload-screed", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
