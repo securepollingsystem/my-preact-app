@@ -2,15 +2,15 @@ import { render } from 'preact';
 import { LocationProvider, Router, Route } from 'preact-iso';
 // vim: ts=2
 
-import { Header } from './components/Header.jsx';
+// import { Header } from './components/Header.jsx';
 import { Home } from './pages/Home/index.jsx';
 import { NotFound } from './pages/_404.jsx';
 import './style.css';
 
+// took out <Header /> after <LocationProvider> and before <main>
 export function App() {
   return (
     <LocationProvider>
-      <Header />
       <main>
         <Router>
           <Route path="/" component={Home} />
