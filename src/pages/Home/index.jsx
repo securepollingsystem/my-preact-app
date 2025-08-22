@@ -3,6 +3,8 @@ import './style.css';
 import { useState, useEffect } from 'preact/hooks';
 import { Modal } from "../../components/Modal.jsx";
 import { ed25519 } from '@noble/curves/ed25519';
+import { bls12_381 } from '@noble/curves/bls12-381';
+import { randomBytes } from '@noble/hashes/utils';
 
 const getSubset = async (searchText) => {
   const tally_url = `https://tally.securepollingsystem.com/opinions?subset=${searchText}`;
@@ -54,6 +56,12 @@ const bytesToBase64 = (bytes) => {
   return btoa(String.fromCharCode(...bytes));
 };
 
+// Hard-coded BLS keypair for the registrar
+// FIXME this should be on registrar server
+const registrarPrivateKey = BigInt("0x2ed099c28c00366fa36668b3ae09ab82e927bc1e5b6c8d0cf4a101d9407ff4a7");
+// Pubkey in G2
+const registrarPublicKey = bls12_381.shortSignatures.getPublicKey(registrarPrivateKey);
+
 export function Home() {
   const [showModal, setShowModal] = useState(false);
   const [searchString, setSearchString] = useState(""); // returns the value and a function to update the value (initially "")
@@ -61,6 +69,7 @@ export function Home() {
   const [modalData, setModalData] = useState({title : "title", children : "slkdfjslkdfjsldkfj"});
   const [loadedScreed, setLoadedScreed] = useState(['default val']);
   const [privateKey, setPrivateKey] = useState(['default val']);
+  const [registrationToken, setRegistrationToken] = useState(null);
 
   function changeScreed(newScreed) {
     setLoadedScreed(newScreed); // scheduled for next render
@@ -119,6 +128,13 @@ export function Home() {
     setShowModal(true);
   }
 
+  function clearKey() {
+    setPrivateKey("nothing found in local storage"); // sets the private key hex string in the state
+    localStorage.setItem("myPrivateKeyHex", ["nothing found in local storage"]); // saves the private key
+    setRegistrationToken(null); // clear registration token when clearing key
+    console.log("privateKey cleared");
+  }
+
   useEffect(() =>
     {
       console.log("myPrivateKeyHex:",localStorage.getItem("myPrivateKeyHex"));
@@ -141,10 +157,61 @@ export function Home() {
     console.log("privateKey saved to localStorage:", privateKeyHex);
   }
 
-  function clearKey() {
-    setPrivateKey("nothing found in local storage"); // sets the private key hex string in the state
-    localStorage.setItem("myPrivateKeyHex", ["nothing found in local storage"]); // saves the private key
-    console.log("privateKey cleared");
+  function registerPublicKey() {
+    if (!privateKey || privateKey == "nothing found in local storage") {
+      alert('You need to generate a key first!');
+      return;
+    }
+
+    try {
+      const privateKeyBytes = hexToBytes(privateKey);
+      // The message we want to sign is the user's ed25519 pub key
+      const publicKeyBytes = ed25519.getPublicKey(privateKeyBytes);
+
+      // Hash the public key to H(m), a point on G1
+      const messageHash = bls12_381.G1.Point.fromAffine(bls12_381.G1.hashToCurve(publicKeyBytes).toAffine());
+      
+      // Generate a random scalar `r` for blinding
+      const r = bls12_381.utils.randomSecretKey();
+
+      // Blind the message by multiplying [r]H(m)
+      const blindedMessageHash = messageHash.multiply(
+        bls12_381.G1.Point.Fn.fromBytes(r)
+      );
+
+      // Create blind signature by multiplying the blinded message hash with
+      // the registrar's private key
+      // FIXME this should be on registrar server
+      const blindSignature = bls12_381.shortSignatures.sign(blindedMessageHash, registrarPrivateKey);
+
+      // Calculate registration token by unblinding, i.e. multiplying by r^{-1}
+      const registrationTokenPoint = blindSignature.multiply(
+        bls12_381.G1.Point.Fn.inv(bls12_381.G1.Point.Fn.fromBytes(r))
+      );
+
+      const registrationTokenBytes = registrationTokenPoint.toBytes();
+
+      // Verify the registration token
+      // FIXME this should be done on the verifier's server
+      const isValid = bls12_381.shortSignatures.verify(
+        registrationTokenBytes,
+        messageHash,
+        registrarPublicKey.toBytes()
+      );
+
+      if (isValid) {
+        setRegistrationToken(bytesToHex(registrationTokenBytes));
+        alert('Public key registered successfully! Registration token generated and verified.');
+        console.log('Registration token:', bytesToHex(registrationTokenBytes));
+      } else {
+        alert('ERROR: Registration token failed verification!');
+        console.error('Registration token verification failed');
+      }
+      
+    } catch (error) {
+      alert('Error registering public key: ' + error.message);
+      console.error('Registration error:', error);
+    }
   }
 
   useEffect(() =>
@@ -185,15 +252,15 @@ export function Home() {
       alert('You can\'t upload your screed without an encryption key!');
       return null;
     }
-
+    
     try {
       const privateKeyBytes = hexToBytes(privateKey);
       const publicKeyBytes = ed25519.getPublicKey(privateKeyBytes);
       const publicKeyHex = bytesToHex(publicKeyBytes);
-
+      
       const screedString = JSON.stringify(loadedScreed);
       const messageBytes = new TextEncoder().encode(screedString);
-
+      
       // Sign the message using Ed25519
       const signatureBytes = ed25519.sign(messageBytes, privateKeyBytes);
       const signature = bytesToBase64(signatureBytes);
@@ -257,6 +324,7 @@ export function Home() {
         <button onClick={clearMyScreedModal}>Clear my screed!</button>
         <button onClick={uploadScreed}>Upload my screed</button>
         <button onClick={clearKey}>Clear my privateKey!</button>
+        <button onClick={registerPublicKey}>Register my public key</button>
       </div>
       {privateKey == 'nothing found in local storage' ? (
         <div onClick={() => console.log("privateKey:",privateKey)} class="italic-info">
@@ -266,6 +334,11 @@ export function Home() {
       ) : (
         <div onClick={() => console.log("privateKey:",privateKey)} class="italic-info">
           Your public key is {getPublicKeyDisplay()}
+          {registrationToken && (
+            <div style={{marginTop: '10px', color: 'green'}}>
+              ✓ Registered! Token: {registrationToken.slice(0, 20)}...
+            </div>
+          )}
         </div>
         )}
       {loadedScreed.map((item) => (
