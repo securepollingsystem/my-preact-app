@@ -2,7 +2,7 @@ import preactLogo from '../../assets/preact.svg';
 import './style.css';
 import { useState, useEffect } from 'preact/hooks';
 import { Modal } from "../../components/Modal.jsx";
-import _sodium from 'libsodium-wrappers';
+import { ed25519 } from '@noble/curves/ed25519';
 
 const getSubset = async (searchText) => {
   const tally_url = `https://tally.securepollingsystem.com/opinions?subset=${searchText}`;
@@ -35,22 +35,32 @@ const getSubset = async (searchText) => {
   return data;
 };
 
+// Helper functions to convert between hex, base64, and Uint8Array
+const hexToBytes = (hex) => {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+  }
+  return bytes;
+};
+
+const bytesToHex = (bytes) => {
+  return Array.from(bytes)
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('');
+};
+
+const bytesToBase64 = (bytes) => {
+  return btoa(String.fromCharCode(...bytes));
+};
+
 export function Home() {
-  const [sodium, setSodium] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [searchString, setSearchString] = useState(""); // returns the value and a function to update the value (initially "")
   const [subset, setSubset] = useState([]);
   const [modalData, setModalData] = useState({title : "title", children : "slkdfjslkdfjsldkfj"});
   const [loadedScreed, setLoadedScreed] = useState(['default val']);
   const [privateKey, setPrivateKey] = useState(['default val']);
-
-  useEffect(() => {
-    (async () => {
-      await _sodium.ready;
-      setSodium(_sodium);
-      console.log("sodium:", _sodium);
-    })();
-  }, []);
 
   function changeScreed(newScreed) {
     setLoadedScreed(newScreed); // scheduled for next render
@@ -118,23 +128,17 @@ export function Home() {
   );
 
   function genKey() {
-    const signKey = sodium.crypto_sign_keypair().privateKey; // generates a new private key for signing
-    console.log("Signing public key:", sodium.to_hex(signKey.slice(32, 64)));
-    const privateKey = sodium.to_hex(signKey);
-    console.log("Signing private key:", privateKey);
+    // Generate a new Ed25519 private key using noble-curves
+    const privateKeyBytes = ed25519.utils.randomSecretKey();
+    const publicKeyBytes = ed25519.getPublicKey(privateKeyBytes);
 
-    setPrivateKey(privateKey); // sets the private key hex string in the state
-    localStorage.setItem("myPrivateKeyHex", privateKey); // saves the private key
-    console.log("privateKey saved to localStorage:", privateKey);
-  //  Suppose you have your private key as a hex string:
-  //  const myPrivateKey = sodium.from_hex("your_private_key_hex_string");
+    console.log("Signing public key:", bytesToHex(publicKeyBytes));
+    const privateKeyHex = bytesToHex(privateKeyBytes);
+    console.log("Signing private key:", privateKeyHex);
 
-  //  The public key is the last 32 bytes of the private key, or you can store it separately:
-  //  const myPublicKey = myPrivateKey.slice(32, 64);
-
-  //  Now you can use myPrivateKey and myPublicKey with sodium.crypto_sign functions
-  //  const myPrivateKey = sodium.from_hex(myPrivateKeyHex);
-  //  const myPublicKey = sodium.from_hex(myPublicKeyHex);
+    setPrivateKey(privateKeyHex); // sets the private key hex string in the state
+    localStorage.setItem("myPrivateKeyHex", privateKeyHex); // saves the private key
+    console.log("privateKey saved to localStorage:", privateKeyHex);
   }
 
   function clearKey() {
@@ -177,24 +181,32 @@ export function Home() {
   }, [showModal]);
 
   function getSignedScreedObject() {
-    if (!sodium) {
-      alert('ERROR: libsodium not found');
-      return null;
-    }
     if (!privateKey || privateKey == "nothing found in local storage") {
       alert('You can\'t upload your screed without an encryption key!');
       return null;
     }
-    const privKeyBytes = sodium.from_hex(privateKey); // Convert privateKey hex string to Uint8Array
-    const pubKeyBytes = privKeyBytes.slice(32, 64); // Get public key (last 32 bytes)
-    const publicKeyHex = sodium.to_hex(pubKeyBytes);
-    const screedString = JSON.stringify(loadedScreed);
-    const signature = sodium.to_base64(sodium.crypto_sign_detached(screedString, privKeyBytes));
-    return { // Create the signed screed object
-      screed: screedString,
-      signature,
-      publicKey: publicKeyHex
-    };
+
+    try {
+      const privateKeyBytes = hexToBytes(privateKey);
+      const publicKeyBytes = ed25519.getPublicKey(privateKeyBytes);
+      const publicKeyHex = bytesToHex(publicKeyBytes);
+
+      const screedString = JSON.stringify(loadedScreed);
+      const messageBytes = new TextEncoder().encode(screedString);
+
+      // Sign the message using Ed25519
+      const signatureBytes = ed25519.sign(messageBytes, privateKeyBytes);
+      const signature = bytesToBase64(signatureBytes);
+      
+      return { // Create the signed screed object
+        screed: screedString,
+        signature,
+        publicKey: publicKeyHex
+      };
+    } catch (error) {
+      alert('Error creating signed screed: ' + error.message);
+      return null;
+    }
   }
 
   function uploadScreed() {
@@ -216,6 +228,24 @@ export function Home() {
       });
   }
 
+  // Helper function to get public key for display
+  function getPublicKeyDisplay() {
+    if (!privateKey || privateKey == "nothing found in local storage") {
+      return "";
+    }
+    try {
+      const privateKeyBytes = hexToBytes(privateKey);
+      const publicKeyBytes = ed25519.getPublicKey(privateKeyBytes);
+      const publicKeyHex = bytesToHex(publicKeyBytes);
+      // Split into two parts like the original code
+      const part1 = publicKeyHex.slice(0, 32);
+      const part2 = publicKeyHex.slice(32, 64);
+      return `${part1} ${part2}`;
+    } catch (error) {
+      return "Error displaying public key";
+    }
+  }
+
   return (
     <div class="home">
       <h1>Secure Polling Demo</h1>
@@ -235,7 +265,7 @@ export function Home() {
         </div>
       ) : (
         <div onClick={() => console.log("privateKey:",privateKey)} class="italic-info">
-          Your public key is {privateKey.slice(64,96)} {privateKey.slice(96,128)}
+          Your public key is {getPublicKeyDisplay()}
         </div>
         )}
       {loadedScreed.map((item) => (
