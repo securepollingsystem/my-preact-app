@@ -52,8 +52,12 @@ const bytesToHex = (bytes) => {
     .join('');
 };
 
-const bytesToBase64 = (bytes) => {
-  return btoa(String.fromCharCode(...bytes));
+const bytesToBase64URL = (bytes) => {
+  const base64 = btoa(String.fromCharCode(...bytes)); // Replace + with -, / with _, and remove padding
+  return base64
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 };
 
 // Hard-coded BLS keypair for the registrar
@@ -263,7 +267,7 @@ export function Home() {
       
       // Sign the message using Ed25519
       const signatureBytes = ed25519.sign(messageBytes, privateKeyBytes);
-      const signature = bytesToBase64(signatureBytes);
+      const signature = bytesToBase64URL(signatureBytes);
       
       return { // Create the signed screed object
         screed: screedString,
