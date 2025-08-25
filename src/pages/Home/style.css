@@ -26,7 +26,7 @@ img:hover {
 }
 
 .italic-info {
-  display: flex;
+  display: ruby;
   cursor: pointer;
   justify-content: space-between;
   border-bottom: 2px solid black;

@@ -5,7 +5,7 @@ import preact from '@preact/preset-vite';
 export default defineConfig({
 	plugins: [preact()],
 	server: {
-		port: 8990,
+		port: 8910,
 		allowedHosts: ['demo.securepollingsystem.org','demo.securepollingsystem.com']
 	}
 });
