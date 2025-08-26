@@ -3,7 +3,7 @@ import './style.css';
 import { useState, useEffect } from 'preact/hooks';
 import { Modal } from "../../components/Modal.jsx";
 import { genKey, registerPublicKey, getSignedScreedObject, getPublicKeyForDisplay, registrarPrivateKey,
-         registrarPublicKey, hexToBytes, bytesToHex, bytesToBase64URL } from './sps_crypto.jsx';
+         registrarPublicKey, hexToBytes, bytesToHex, bytesToBase64URL } from './sps_crypto.tsx';
 
 const getSubset = async (searchText) => {
   const tally_url = `https://tally.securepollingsystem.com/opinions?subset=${searchText}`;
