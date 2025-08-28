@@ -219,7 +219,7 @@ export function Home() {
         display: "flex"
           }}>
     <h1>Search text:</h1>
-      <input
+      <textarea
         value={searchString}
         onChange={e => setSearchString(e.target.value)}
         onKeyDown={e => {
