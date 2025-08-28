@@ -7,9 +7,9 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
-		"@noble/curves": "^1.9.7",
 		"preact": "^10.25.3",
-		"preact-iso": "^2.9.2"
+		"preact-iso": "^2.9.2",
+		"sps-common": "github:securepollingsystem/sps-common"
 	},
 	"devDependencies": {
 		"@preact/preset-vite": "^2.9.3",
