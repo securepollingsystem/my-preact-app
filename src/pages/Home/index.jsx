@@ -2,8 +2,7 @@ import preactLogo from '../../assets/preact.svg';
 import './style.css';
 import { useState, useEffect } from 'preact/hooks';
 import { Modal } from "../../components/Modal.jsx";
-import { genKey, registerPublicKey, getSignedScreedObject, getPublicKeyForDisplay, registrarPrivateKey,
-         registrarPublicKey, hexToBytes, bytesToHex, bytesToBase64URL } from 'sps-common';
+import { genKey, registerPublicKey, getSignedScreedObject, getPublicKeyForDisplay } from 'sps-common';
 
 const getSubset = async (searchText) => {
   const tally_url = `https://tally.securepollingsystem.com/opinions?subset=${searchText}`;
