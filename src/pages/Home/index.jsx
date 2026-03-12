@@ -3,17 +3,18 @@ import './style.css';
 import { useState, useEffect } from 'preact/hooks';
 import { Modal } from "../../components/Modal.jsx";
 import { genKey, registerPublicKey, getSignedScreedObject, getPublicKeyForDisplay } from 'sps-common';
+import { tallyServer, uploadServer } from '../../urls.js';
 
 const getSubset = async (searchText) => {
-  const tally_url = `https://tally.securepollingsystem.com/opinions?subset=${searchText}`;
+  const tallyUrl = tallyServer+`/opinions?subset=${searchText}`;
   const res = await fetch(
-    tally_url
+    tallyUrl
   ).catch((e) => {
     console.log(e);
   });
   console.log(
     "url:",
-    tally_url
+    tallyUrl
   );
 
   var data = [];
@@ -113,12 +114,6 @@ export function Home() {
     {
       console.log("myPrivateKeyHex:",localStorage.getItem("myPrivateKeyHex"));
       setPrivateKey(localStorage.getItem("myPrivateKeyHex") || ["nothing found in local storage"]);
-    },
-    []
-  );
-
-  useEffect(() =>
-    {
       console.log("myScreed:",localStorage.getItem("myScreed"));
       setLoadedScreed(JSON.parse(localStorage.getItem("myScreed")) || []);
     },
@@ -153,7 +148,7 @@ export function Home() {
   function uploadScreed() {
     const signedObj = getSignedScreedObject(loadedScreed, privateKey);
     if (!signedObj) return;
-    fetch("https://tally.securepollingsystem.com/upload-screed", {
+    fetch(uploadServer+'/upload-screed', {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
