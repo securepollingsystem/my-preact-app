@@ -4,37 +4,8 @@ import { useState, useEffect } from 'preact/hooks';
 import { Modal } from "../../components/Modal.jsx";
 import { genKey, registerPublicKey, getSignedScreedObject, getPublicKeyForDisplay } from 'sps-common';
 import { tallyServer, uploadServer } from '../../urls.js';
-
-const getSubset = async (searchText) => {
-  const tallyUrl = tallyServer+`/opinions?subset=${searchText}`;
-  const res = await fetch(
-    tallyUrl
-  ).catch((e) => {
-    console.log(e);
-  });
-  console.log(
-    "url:",
-    tallyUrl
-  );
-
-  var data = [];
-
-  try {
-    if (!res.ok) {
-      throw new Error(`Network response was not ok. Status: ${res.status}`);
-    }
-    data = await res.json();
-  } catch(error) {
-    console.log('could not try if !res.ok', error);
-    if (searchText == '') {
-      data = [ {id:0,opinion:'no data was returned from the server',screed_count:53} ];
-    }
-  }
-
-  console.log("fetched opinions:", data.length);
-
-  return data;
-};
+import { Search } from '../Search/index.jsx';
+import { Screed } from '../Screed/index.jsx';
 
 export function Home() {
   const [showModal, setShowModal] = useState(false);
@@ -121,10 +92,6 @@ export function Home() {
   );
 
   useEffect(() => {
-    getSubset(searchString.toLowerCase()).then(setSubset);
-  }, [searchString]); // searchString is what it watches and reloads the fetch on changes!!!!!!!
-
-  useEffect(() => {
     if (showModal) {
       document.getElementById("confirmBtn").focus(); // make Enter not go to the wrong place
     }
@@ -208,91 +175,25 @@ export function Home() {
         }
       </div>
       {activeTab === 'screed' ? (
-        <div>
-          {/*My public key is {getPublicKeyForDisplay(privateKey)}*/}
-          {privateKey == 'nothing found in local storage' ? (
-            <div onClick={() => console.log("privateKey:",privateKey)} class="italic-info">
-              You don't have an encryption key yet!
-              <button onClick={() => genKey(setPrivateKey)} >Generate and save a new encryption key</button>
-            </div>
-          ) : (
-            <div onClick={() => console.log("privateKey:",privateKey)} class="italic-info">
-              {registrationToken && (
-                <div style={{marginTop: '10px', color: 'green'}}>
-                  ✓ Your key is Registered, you can upload your screed
-                </div>
-              ) || (
-                <div style={{marginTop: '10px', color: 'orange'}}>
-                  ⚠️ You need to register your public key before uploading your screed.
-                </div>
-              )}
-            </div>
-            )}
-          <div style={{
-            display: "flex"
-              }}>
-            <h1>My Screed:</h1>
-            <button onClick={clearMyScreedModal}>Clear my screed!</button>
-            <button onClick={uploadScreed}>Upload my screed</button>
-            <button onClick={clearKey}>Clear my privateKey!</button>
-            <button onClick={() => registerPublicKey(privateKey, setRegistrationToken)}>Register my public key</button>
-          </div>
-          {loadedScreed.map((item) => (
-            <div
-              onClick={() => deleteThisOpinionModal(item)}
-              key={JSON.stringify(item)}
-              class="opinion"
-            >
-              {" "}
-              <div>{item}</div>
-              <div style={{ fontWeight: "bold", minWidth: "3em" }}> {item.screed_count} </div>
-            </div>
-          ))}
-        </div>
+        <Screed
+          loadedScreed={loadedScreed}
+          privateKey={privateKey}
+          registrationToken={registrationToken}
+          setPrivateKey={setPrivateKey}
+          setRegistrationToken={setRegistrationToken}
+          clearMyScreedModal={clearMyScreedModal}
+          deleteThisOpinionModal={deleteThisOpinionModal}
+          uploadScreed={uploadScreed}
+          clearKey={clearKey}
+        />
       ) : (
-        <div>
-          <div style={{
-            display: "flex"
-              }}>
-            <h1>Search text:</h1>
-            <textarea
-              value={searchString}
-              onChange={e => setSearchString(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  if (searchString.trim() !== "" && subset.length === 0) {
-                    bringUpAddThisModal(searchString);
-                  }
-                }
-              }}
-            />
-          </div>
-          {subset.length === 0 ? (
-            <div
-              onClick={() => bringUpAddThisModal(searchString)}
-              key="compose"
-              class="opinion"
-            >
-              click or press Enter to add {searchString} to your screed
-            </div>
-          ) : (
-            subset.map((item) => (
-              <div
-                onClick={() => bringUpAddThisModal(item.opinion)}
-                key={item.id} // react uses the key to keep track of DOM so must be unique
-                class="opinion"
-              >
-                {" "}
-                {/* https://css-tricks.com/snippets/css/a-guide-to-flexbox/ */}
-                <div>{item.opinion}</div>
-                <div style={{ fontWeight: "bold", minWidth: "3em" }}>
-                  {item.screed_count}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        <Search
+          searchString={searchString}
+          setSearchString={setSearchString}
+          subset={subset}
+          setSubset={setSubset}
+          bringUpAddThisModal={bringUpAddThisModal}
+        />
       )}
     </div>
   );
