@@ -40,9 +40,9 @@ export function Home() {
   const [showModal, setShowModal] = useState(false);
   const [searchString, setSearchString] = useState(""); // returns the value and a function to update the value (initially "")
   const [subset, setSubset] = useState([]);
-  const [modalData, setModalData] = useState({title : "title", children : "slkdfjslkdfjsldkfj"});
+  const [modalData, setModalData] = useState({title : "title", children : <div>slkdfjslkdfjsldkfj</div>});
   const [loadedScreed, setLoadedScreed] = useState(['default val']);
-  const [privateKey, setPrivateKey] = useState(['default val']);
+  const [privateKey, setPrivateKey] = useState('default val');
   const [registrationToken, setRegistrationToken] = useState(null);
   const [activeTab, setActiveTab] = useState('search'); // 'screed' or 'search'
 
@@ -105,7 +105,7 @@ export function Home() {
 
   function clearKey() {
     setPrivateKey("nothing found in local storage"); // sets the private key hex string in the state
-    localStorage.setItem("myPrivateKeyHex", ["nothing found in local storage"]); // saves the private key
+    localStorage.setItem("myPrivateKeyHex", "nothing found in local storage"); // saves the private key
     setRegistrationToken(null); // clear registration token when clearing key
     console.log("privateKey cleared");
   }
@@ -113,7 +113,7 @@ export function Home() {
   useEffect(() =>
     {
       console.log("myPrivateKeyHex:",localStorage.getItem("myPrivateKeyHex"));
-      setPrivateKey(localStorage.getItem("myPrivateKeyHex") || ["nothing found in local storage"]);
+      setPrivateKey(localStorage.getItem("myPrivateKeyHex") || "nothing found in local storage");
       console.log("myScreed:",localStorage.getItem("myScreed"));
       setLoadedScreed(JSON.parse(localStorage.getItem("myScreed")) || []);
     },
