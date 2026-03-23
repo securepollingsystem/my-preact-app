@@ -1,0 +1,3 @@
+when on the My Screed page, notify user if their uploaded screed doesn't match (or doesn't exist) on the server
+when on the Search page, periodically check to see if there is any newer data than what we already have
+and do an animation when things change
